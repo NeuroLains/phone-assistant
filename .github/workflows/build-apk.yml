@@ -13,6 +13,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -30,13 +31,19 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Fix orientation constant
+        working-directory: source/phone-assistant
+        run: |
+          sed -i 's/l.setOrientation(1)/l.setOrientation(LinearLayout.VERTICAL)/' app/src/main/java/ru/neurolains/phoneassistant/MainActivity.java
+
       - name: Test and build
         working-directory: source/phone-assistant
         run: |
           python3 -m unittest discover -s server -v
           gradle --no-daemon :app:assembleDebug :app:lintDebug
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: PhoneAssistant-APK
           path: source/phone-assistant/app/build/outputs/apk/debug/app-debug.apk
